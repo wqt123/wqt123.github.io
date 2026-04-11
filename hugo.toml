@@ -1,0 +1,47 @@
+baseURL = "https://wqt123.github.io/"
+languageCode = "zh-cn"
+title = "神秘人哈哈哈"
+hasCJKLanguage = true
+enableRobotsTXT = true
+summaryLength = 120
+
+[params]
+description = "记录学习、思考与长期积累。"
+author = "神秘人哈哈哈"
+subtitle = "把每天学到的东西，慢慢变成长期可复用的理解。"
+
+[permalinks]
+posts = "/posts/:slug/"
+
+[taxonomies]
+tag = "tags"
+series = "series"
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+  [markup.tableOfContents]
+    startLevel = 2
+    endLevel = 3
+    ordered = false
+
+[outputs]
+home = ["HTML", "RSS"]
+section = ["HTML", "RSS"]
+taxonomy = ["HTML", "RSS"]
+term = ["HTML", "RSS"]
+
+[menu]
+  [[menu.main]]
+    name = "首页"
+    url = "/"
+    weight = 10
+  [[menu.main]]
+    name = "文章"
+    url = "/posts/"
+    weight = 20
+  [[menu.main]]
+    name = "关于"
+    url = "/about/"
+    weight = 30
