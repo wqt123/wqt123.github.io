@@ -1,0 +1,26 @@
+{{ define "main" }}
+  <section class="content-header">
+    <p class="eyebrow">{{ .Section | default "List" }}</p>
+    <h1>{{ .Title }}</h1>
+    {{ with .Description }}<p class="content-description">{{ . }}</p>{{ end }}
+  </section>
+
+  <section class="post-list">
+    {{ range .Pages.ByDate.Reverse }}
+      <article class="post-item">
+        <div class="post-item__meta">{{ .Date.Format "2006-01-02" }}</div>
+        <div class="post-item__body">
+          <h2><a href="{{ .RelPermalink }}">{{ .Title }}</a></h2>
+          <p>{{ with .Params.summary }}{{ . }}{{ else }}{{ .Summary }}{{ end }}</p>
+          {{ with .Params.tags }}
+            <div class="tag-row">
+              {{ range . }}
+                <span class="tag-chip">#{{ . }}</span>
+              {{ end }}
+            </div>
+          {{ end }}
+        </div>
+      </article>
+    {{ end }}
+  </section>
+{{ end }}
