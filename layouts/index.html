@@ -1,0 +1,37 @@
+{{ define "main" }}
+  <section class="hero">
+    <div class="hero__badge">Daily Learning Log</div>
+    <h1>把每天学到的东西，慢慢变成长期理解。</h1>
+    <p>
+      这里主要记录大数据、图计算、Agent 原理、系统设计与安全相关的学习过程。
+      内容会尽量从原理出发，避免只停留在工具层。
+    </p>
+    <div class="hero__actions">
+      <a class="button button--primary" href="{{ "/posts/" | relURL }}">开始阅读</a>
+      <a class="button button--ghost" href="{{ "/about/" | relURL }}">关于我</a>
+    </div>
+  </section>
+
+  <section class="section-block">
+    <div class="section-block__header">
+      <h2>最新文章</h2>
+      <a href="{{ "/posts/" | relURL }}">查看全部</a>
+    </div>
+    <div class="post-grid">
+      {{ range first 6 (where .Site.RegularPages "Section" "posts").ByDate.Reverse }}
+        <article class="post-card">
+          <p class="post-card__meta">{{ .Date.Format "2006-01-02" }}</p>
+          <h3><a href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
+          <p>{{ with .Params.summary }}{{ . }}{{ else }}{{ .Summary }}{{ end }}</p>
+          {{ with .Params.tags }}
+            <div class="tag-row">
+              {{ range . }}
+                <span class="tag-chip">#{{ . }}</span>
+              {{ end }}
+            </div>
+          {{ end }}
+        </article>
+      {{ end }}
+    </div>
+  </section>
+{{ end }}
