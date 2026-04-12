@@ -1,0 +1,14 @@
+{{- $dir := .Get 0 -}}
+{{- $files := sort (readDir $dir) "Name" -}}
+{{- $scratch := newScratch -}}
+{{- $scratch.Set "content" "" -}}
+{{- range $files -}}
+  {{- if not .IsDir -}}
+    {{- $current := $scratch.Get "content" -}}
+    {{- $path := printf "%s/%s" $dir .Name -}}
+    {{- $next := readFile $path -}}
+    {{- $scratch.Set "content" (printf "%s\n\n%s" $current $next) -}}
+  {{- end -}}
+{{- end -}}
+{{- $opts := dict "display" "block" -}}
+{{- ($scratch.Get "content") | $.Page.RenderString $opts -}}
