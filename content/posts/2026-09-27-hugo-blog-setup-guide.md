@@ -1,0 +1,276 @@
+---
+title: "用 Hugo 搭建个人博客：从初始化到自动部署"
+date: 2026-09-27T11:00:00+08:00
+draft: false
+slug: "hugo-blog-setup-guide"
+summary: "一篇偏技术的 Hugo 建站实践：目录结构、配置、内容组织、模板体系，以及 GitHub Pages 自动部署的完整路径，全部基于本博客的真实配置。"
+category: "projects"
+tags:
+  - hugo
+  - static-site
+  - github-pages
+  - workflow
+---
+
+# 用 Hugo 搭建个人博客：从初始化到自动部署
+
+## 一、为什么是 Hugo
+
+选静态站点生成器时，我对比过 Jekyll、Hexo、Hugo 三者，最终选 Hugo 的理由很具体：
+
+- **单二进制**：整个工具就是一个可执行文件，macOS 上放到 `~/bin` 就能用，不依赖 Ruby / Node 运行时
+- **构建快**：几十篇文章的站点构建在几十毫秒内完成，本地预览即时刷新
+- **模板体系强**：`baseof` 继承、`partials` 复用、taxonomy 原生成，足够表达自定义设计，不需要去改主题源码
+- **数据驱动**：`data/` 目录 + 模板遍历，可以把"分类定义"这类元数据做成单一事实来源
+
+本文不讨论"怎么选主题"，而是完整走一遍**从零到自动部署**的路径，全部配置取自本博客的真实文件。
+
+## 二、目录结构
+
+一个 Hugo 站点的核心目录只有几个：
+
+```text
+wqt123.github.io/
+├── hugo.toml            # 全局配置
+├── content/             # 内容（Markdown）
+│   ├── _index.md        # 首页内容
+│   ├── posts/           # 文章 section
+│   │   ├── _index.md    # 文章列表页内容
+│   │   └── 2026-xx-xx-xxx.md
+│   └── categories/      # 分类 taxonomy 的 term 内容
+│       ├── notes/_index.md
+│       ├── projects/_index.md
+│       ├── topics/_index.md
+│       └── thoughts/_index.md
+├── layouts/             # 模板
+│   ├── _default/
+│   │   ├── baseof.html  # 全站骨架
+│   │   ├── index.html   # 首页
+│   │   ├── list.html    # 列表页
+│   │   └── single.html  # 文章页
+│   ├── partials/        # 可复用片段
+│   └── taxonomy/        # 分类页模板
+├── data/                # 非内容型数据（分类定义）
+├── static/              # 原样发布的静态资源（CSS/JS）
+├── archetypes/          # 新文章模板
+└── .github/workflows/   # CI 部署
+```
+
+关键认知：**content/ 放内容，layouts/ 放结构，data/ 放元数据，static/ 放资源**。这四者解耦，是 Hugo 模板体系好用的前提。
+
+## 三、配置：hugo.toml
+
+本博客的核心配置（节选）：
+
+```toml
+baseURL = "https://wqt123.github.io/"
+languageCode = "zh-cn"
+title = "WQT Agent Lab"
+hasCJKLanguage = true
+enableRobotsTXT = true
+
+[params]
+description = "一个 Agent 工程师持续学习、构建和思考的个人工作台。"
+subtitle = "和智能体一起，持续构建。"
+
+[taxonomies]
+tag = "tags"
+series = "series"
+category = "categories"
+
+[permalinks]
+posts = "/posts/:slug/"
+```
+
+几个值得注意的点：
+
+- `hasCJKLanguage = true`：让 Hugo 按 CJK 语言规则做摘要截断，否则中文摘要的截断位置会奇怪
+- `taxonomies`：内置 tag/series，新增 category，三个分类体系各司其职
+- `permalinks`：文章 URL 用 `:slug`，不暴露日期，方便长期稳定引用
+- `summaryLength`：控制在列表页截断正文的长度
+
+## 四、内容组织：section 与 taxonomy
+
+个人博客最容易失控的地方是"内容没有结构"。我用两层模型解决：
+
+**主分类（taxonomy，必选其一）**——表达"这篇内容是什么性质"：
+
+| 分类 | 定位 |
+| --- | --- |
+| notes 学习笔记 | 概念拆解、论文阅读、工具探索 |
+| projects 项目实践 | 真实实现、踩坑记录、工程复盘 |
+| topics 深度专题 | 系统整理后可长期复用的内容 |
+| thoughts 随想 | 行业观察、个人判断、未完成想法 |
+
+**标签（tag，可选多个）**——表达"这篇内容涉及什么技术"。
+
+分类定义放在 `data/categories.toml`，成为单一事实来源：
+
+```toml
+[[categories]]
+slug = "projects"
+title = "项目实践"
+code = "BUILD"
+description = "真实实现、踩坑记录、工程复盘。"
+empty = "正在构建"
+```
+
+每篇文章在 front matter 里声明归属：
+
+```yaml
+---
+title: "用 Hugo 搭建个人博客"
+date: 2026-09-27T11:00:00+08:00
+category: "projects"
+tags: ["hugo", "github-pages"]
+---
+```
+
+**把内容规范变成工程约束**：模板里有一个 partial 专门校验分类合法性，文章没有分类或分类不在定义表里，构建直接失败。靠构建期报错，而不是靠人自觉。
+
+## 五、模板体系
+
+### baseof：全站骨架
+
+所有页面继承同一个骨架，导航、页脚只写一次：
+
+```go-html-template
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }} | {{ .Site.Title }}{{ end }}</title>
+  <link rel="stylesheet" href="{{ "css/main.css" | relURL }}">
+</head>
+<body>
+  <header class="site-header">…</header>
+  <main id="main-content" class="site-main">
+    {{ block "main" . }}{{ end }}
+  </main>
+  <footer class="site-footer">…</footer>
+</body>
+</html>
+```
+
+### 首页：数据驱动的分类入口
+
+首页不放文章流，而是遍历 `data/categories.toml` 渲染四个分类入口卡片。数据变了，首页自动变，模板一行不用改：
+
+```go-html-template
+{{ range $index, $category := .Site.Data.categories.categories }}
+  {{ $term := $.Site.GetPage (printf "/categories/%s" $category.slug) }}
+  <a class="category-path" href="{{ $term.RelPermalink }}">
+    <span>{{ printf "%02d" (add $index 1) }} / {{ $category.code }}</span>
+    <h3>{{ $category.title }}</h3>
+    <p>{{ $category.description }}</p>
+    <span>{{ if gt (len $term.Pages) 0 }}{{ len $term.Pages }} 篇{{ else }}{{ $category.empty }}{{ end }}</span>
+  </a>
+{{ end }}
+```
+
+### single：文章页
+
+文章页组装了分类标签、日期、阅读时长、浏览量占位、条件粘性目录和评论区：
+
+```go-html-template
+<article class="article-page">
+  <header class="article-head">
+    <p class="section-label">{{ $category.title }}</p>
+    <h1>{{ .Title }}</h1>
+    <div class="article-meta">
+      <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2006-01-02" }}</time>
+      <span>约 {{ .ReadingTime }} 分钟</span>
+    </div>
+  </header>
+  <div class="article-shell">
+    {{ if gt (len .TableOfContents) 40 }}
+      <aside class="article-toc">{{ .TableOfContents }}</aside>
+    {{ end }}
+    <div class="article-content">{{ .Content }}</div>
+  </div>
+</article>
+```
+
+注意 `{{ .TableOfContents }}`：Hugo 原生生成目录 HTML，模板里只需判断"内容够长才显示侧栏目录"，长文自动有目录，短文不浪费版面。
+
+## 六、本地构建与预览
+
+安装（与 CI 完全一致的版本）：
+
+```bash
+mkdir -p ~/bin
+curl -L -o /tmp/hugo.tar.gz \
+  https://github.com/gohugoio/hugo/releases/download/v0.145.0/hugo_extended_0.145.0_darwin-universal.tar.gz
+tar -xzf /tmp/hugo.tar.gz -C /tmp
+mv /tmp/hugo ~/bin/hugo
+hugo version   # v0.145.0+extended
+```
+
+预览与构建：
+
+```bash
+hugo server          # 本地实时预览，默认 http://localhost:1313
+HUGO_ENVIRONMENT=production hugo --minify   # 生产构建，产物在 public/
+```
+
+**版本对齐原则**：本地版本必须和 CI 工作流里 `hugo-version` 完全一致，否则模板语法差异会在线上炸。`extended` 版本必须开，否则 SCSS/SASS 相关的模板无法编译。
+
+## 七、自动部署：GitHub Pages + Actions
+
+部署的核心是 `.github/workflows/hugo.yml`：
+
+```yaml
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: "0.145.0"
+          extended: true
+      - run: hugo --minify
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/deploy-pages@v4
+```
+
+配套的**一次性设置**（在 GitHub 仓库 Settings → Pages）：
+
+1. Build and deployment → Source 选择 **GitHub Actions**（不是"从分支部署"！）
+2. 之后每次 `git push main`，自动完成 构建 → 上传产物 → 发布
+
+## 八、踩过的坑
+
+1. **hugo.toml 带 BOM 导致解析失败**：编辑器存了带 BOM 的 TOML，报 `invalid character at start of key`。用 `python3 -c` 去掉前三个字节即可
+2. **Pages 部署源是分支部署，线上一直是旧静态文件**：这是最隐蔽的坑。Actions 明明构建成功，线上却纹丝不动——因为仓库之前是"从分支部署"，直接发布仓库根目录里的旧 HTML。切换 Source 到 GitHub Actions 才真正走构建产物
+3. **taxonomy 列表页没有专用模板会崩**：`/categories/`、`/tags/` 这类 taxonomy 列表页（Kind = taxonomy）会回退到 `_default/list.html`，如果 list.html 假设"子页面都是文章"就会 nil pointer。需要按 `Kind` 分支处理
+4. **本地与 CI 版本不一致**：模板语法（如 `partial` 返回值、`errorf`）在不同版本行为有差异，必须锁定同一版本
+5. **构建成功 ≠ 部署成功**：本地 `hugo --minify` 通过只是第一步，最终要以线上 URL 的实际响应为准验证
+
+## 九、小结
+
+Hugo 建站的完整链路：**内容（Markdown）→ 模板（layouts）→ 构建（hugo）→ 发布（Actions + Pages）**。
+
+它的核心价值不是"快"，而是**内容与结构彻底解耦**：文章就是纯 Markdown，换模板不改内容；分类元数据在 data/ 里，首页结构在模板里，两边互不打扰。配合 GitHub Actions，写作体验变成"写一个文件，推一下，线上更新"，而这一切的成本是 0 元。
