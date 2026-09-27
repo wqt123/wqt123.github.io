@@ -1,6 +1,8 @@
 {{- $page := . -}}
-{{- $slug := $page.Params.category | default "" -}}
 {{- $valid := slice "notes" "projects" "topics" "thoughts" -}}
+{{- $slug := "" -}}
+{{- with .Params.categories }}{{ $slug = index . 0 }}{{ end -}}
+{{- if not $slug }}{{ $slug = .Params.category | default "" }}{{ end -}}
 {{- if not (in $valid $slug) -}}
   {{- errorf "post %q must define one category from %v" $page.File.Path $valid -}}
 {{- end -}}

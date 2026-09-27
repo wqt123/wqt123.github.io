@@ -1,10 +1,11 @@
 ---
-title: "用 Hugo 搭建个人博客：从初始化到自动部署"
+title: "用 Hugo 搭建个人博客：从设计到自动部署"
 date: 2026-09-27T11:00:00+08:00
 draft: false
 slug: "hugo-blog-setup-guide"
-summary: "一篇偏技术的 Hugo 建站实践：目录结构、配置、内容组织、模板体系，以及 GitHub Pages 自动部署的完整路径，全部基于本博客的真实配置。"
-category: "projects"
+summary: "一篇完整的 Hugo 建站实践：动机与选型、目录结构、配置、内容组织、模板体系、AI 辅助设计迭代，以及 GitHub Pages 自动部署的完整路径，全部基于本博客的真实配置。"
+categories:
+  - projects
 tags:
   - hugo
   - static-site
@@ -12,20 +13,40 @@ tags:
   - workflow
 ---
 
-# 用 Hugo 搭建个人博客：从初始化到自动部署
+# 用 Hugo 搭建个人博客：从设计到自动部署
 
-## 一、为什么是 Hugo
+## 一、为什么搭这个博客
 
-选静态站点生成器时，我对比过 Jekyll、Hexo、Hugo 三者，最终选 Hugo 的理由很具体：
+个人博客这件事，我想要的不是"一个能发文章的网站"，而是：
+
+- **免费**：不买服务器、不续费域名，长期维护成本为零
+- **可控**：内容就是 Markdown 文件，放自己仓库里，随时迁移
+- **长积累**：把零散输入沉淀成可复用的理解，而不是发完就散
+- **有设计感**：不是套一个现成主题模板，而是能自己迭代出想要的样子
+
+在静态站点生成器里，我对比过 Jekyll、Hexo、Hugo 三者，最终选 Hugo 的理由很具体：
 
 - **单二进制**：整个工具就是一个可执行文件，macOS 上放到 `~/bin` 就能用，不依赖 Ruby / Node 运行时
 - **构建快**：几十篇文章的站点构建在几十毫秒内完成，本地预览即时刷新
 - **模板体系强**：`baseof` 继承、`partials` 复用、taxonomy 原生成，足够表达自定义设计，不需要去改主题源码
 - **数据驱动**：`data/` 目录 + 模板遍历，可以把"分类定义"这类元数据做成单一事实来源
 
-本文不讨论"怎么选主题"，而是完整走一遍**从零到自动部署**的路径，全部配置取自本博客的真实文件。
+## 二、整体架构
 
-## 二、目录结构
+```mermaid
+flowchart LR
+    A["内容：Markdown 文件<br/>content/ + data/"] --> B["Hugo 静态站点生成器<br/>layouts/ + static/"]
+    B --> C["构建产物 public/"]
+    C --> D["GitHub Actions<br/>hugo.yml 自动构建"]
+    D --> E["GitHub Pages 托管<br/>wqt123.github.io"]
+```
+
+- **Hugo**：负责把 Markdown 变成 HTML。快、单二进制、模板体系灵活
+- **GitHub Pages**：免费静态托管，绑定 `wqt123.github.io` 免费域名
+- **GitHub Actions**：推送 `main` 分支后自动构建并发布，全程不用手动上传
+- **AI 代理（豆包工作版）**：在本地仓库里直接协作——读项目、写模板、迭代设计、执行命令、提交推送
+
+## 三、目录结构
 
 一个 Hugo 站点的核心目录只有几个：
 
@@ -58,7 +79,7 @@ wqt123.github.io/
 
 关键认知：**content/ 放内容，layouts/ 放结构，data/ 放元数据，static/ 放资源**。这四者解耦，是 Hugo 模板体系好用的前提。
 
-## 三、配置：hugo.toml
+## 四、配置：hugo.toml
 
 本博客的核心配置（节选）：
 
@@ -89,7 +110,7 @@ posts = "/posts/:slug/"
 - `permalinks`：文章 URL 用 `:slug`，不暴露日期，方便长期稳定引用
 - `summaryLength`：控制在列表页截断正文的长度
 
-## 四、内容组织：section 与 taxonomy
+## 五、内容组织：section 与 taxonomy
 
 个人博客最容易失控的地方是"内容没有结构"。我用两层模型解决：
 
@@ -121,14 +142,15 @@ empty = "正在构建"
 ---
 title: "用 Hugo 搭建个人博客"
 date: 2026-09-27T11:00:00+08:00
-category: "projects"
+categories:
+  - projects
 tags: ["hugo", "github-pages"]
 ---
 ```
 
 **把内容规范变成工程约束**：模板里有一个 partial 专门校验分类合法性，文章没有分类或分类不在定义表里，构建直接失败。靠构建期报错，而不是靠人自觉。
 
-## 五、模板体系
+## 六、模板体系
 
 ### baseof：全站骨架
 
@@ -194,7 +216,18 @@ tags: ["hugo", "github-pages"]
 
 注意 `{{ .TableOfContents }}`：Hugo 原生生成目录 HTML，模板里只需判断"内容够长才显示侧栏目录"，长文自动有目录，短文不浪费版面。
 
-## 六、本地构建与预览
+## 七、用 AI 迭代视觉设计
+
+这是最有意思的部分。我没有直接套主题，而是把设计需求拆给豆包工作版（AI 代理）：
+
+1. 先让它熟悉现有站点，读结构、读样式，理解"现在长什么样"
+2. 给出几个明确的设计方向（高保真 HTML 示例），每个都包含首页、文章列表、文章阅读页三个视图，直接在浏览器里对比
+3. 一轮轮提意见：去掉"当前关注"区块、去掉区块标题、导航只留 GitHub……每次修改后 AI 自动截图自检布局和溢出
+4. 定稿后，把定稿方向翻译成 Hugo 模板与 CSS tokens
+
+最终的方向是"信号白 · 编辑实验室"：真白背景、靛蓝主色、琥珀信号点、零圆角、编辑刊物式排版。设计原则是**克制**——首页只有主标语和四类内容入口，不放文章流、不做卡片堆砌。AI 的价值不在"生成一个网站"，而在把"我想象中的网站"一步步变成"实际运行的网站"。
+
+## 八、本地构建与预览
 
 安装（与 CI 完全一致的版本）：
 
@@ -216,7 +249,7 @@ HUGO_ENVIRONMENT=production hugo --minify   # 生产构建，产物在 public/
 
 **版本对齐原则**：本地版本必须和 CI 工作流里 `hugo-version` 完全一致，否则模板语法差异会在线上炸。`extended` 版本必须开，否则 SCSS/SASS 相关的模板无法编译。
 
-## 七、自动部署：GitHub Pages + Actions
+## 九、自动部署：GitHub Pages + Actions
 
 部署的核心是 `.github/workflows/hugo.yml`：
 
@@ -261,7 +294,31 @@ jobs:
 1. Build and deployment → Source 选择 **GitHub Actions**（不是"从分支部署"！）
 2. 之后每次 `git push main`，自动完成 构建 → 上传产物 → 发布
 
-## 八、踩过的坑
+## 十、评论与浏览量
+
+文章页做了两个轻量集成，都遵循"**第三方失败不影响阅读**"的原则：
+
+- **浏览量**：GoatCounter，免费、隐私友好，只在文章页加载计数
+- **评论**：Giscus，评论数据存在仓库的 GitHub Discussions 里，评论者用 GitHub 账号登录
+
+两个集成都通过 `hugo.toml` 参数控制开关：
+
+```toml
+[params.goatcounter]
+enabled = false
+code = ""
+
+[params.giscus]
+enabled = false
+repo = "wqt123/wqt123.github.io"
+repoId = ""
+category = "Announcements"
+categoryId = ""
+```
+
+未配置时显示稳定的占位状态（`— 次阅读`、"评论区尚未启用"），拿到外部配置后开启即可，不需要改模板。
+
+## 十一、踩过的坑
 
 1. **hugo.toml 带 BOM 导致解析失败**：编辑器存了带 BOM 的 TOML，报 `invalid character at start of key`。用 `python3 -c` 去掉前三个字节即可
 2. **Pages 部署源是分支部署，线上一直是旧静态文件**：这是最隐蔽的坑。Actions 明明构建成功，线上却纹丝不动——因为仓库之前是"从分支部署"，直接发布仓库根目录里的旧 HTML。切换 Source 到 GitHub Actions 才真正走构建产物
@@ -269,8 +326,12 @@ jobs:
 4. **本地与 CI 版本不一致**：模板语法（如 `partial` 返回值、`errorf`）在不同版本行为有差异，必须锁定同一版本
 5. **构建成功 ≠ 部署成功**：本地 `hugo --minify` 通过只是第一步，最终要以线上 URL 的实际响应为准验证
 
-## 九、小结
+## 十二、成本与小结
 
-Hugo 建站的完整链路：**内容（Markdown）→ 模板（layouts）→ 构建（hugo）→ 发布（Actions + Pages）**。
+- **钱**：0 元。Hugo 免费、GitHub Pages 免费、GoatCounter 免费
+- **维护**：写文章就是加一个 Markdown 文件，推上去自动上线
+- **控制权**：所有代码、内容、样式都在自己仓库里
 
-它的核心价值不是"快"，而是**内容与结构彻底解耦**：文章就是纯 Markdown，换模板不改内容；分类元数据在 data/ 里，首页结构在模板里，两边互不打扰。配合 GitHub Actions，写作体验变成"写一个文件，推一下，线上更新"，而这一切的成本是 0 元。
+Hugo 建站的完整链路：**内容（Markdown）→ 模板（layouts）→ 构建（hugo）→ 发布（Actions + Pages）**。它的核心价值不是"快"，而是**内容与结构彻底解耦**：文章就是纯 Markdown，换模板不改内容；分类元数据在 data/ 里，首页结构在模板里，两边互不打扰。配合 GitHub Actions，写作体验变成"写一个文件，推一下，线上更新"。
+
+> 真正代表你会搭博客的，不是"能跑起来"，而是"以后每一篇文章，都能稳定地、按你想要的方式发布"。
