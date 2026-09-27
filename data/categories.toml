@@ -1,0 +1,27 @@
+[[categories]]
+slug = "notes"
+title = "学习笔记"
+code = "INPUT"
+description = "概念拆解、论文阅读与工具探索。"
+empty = "正在积累"
+
+[[categories]]
+slug = "projects"
+title = "项目实践"
+code = "BUILD"
+description = "真实实现、踩坑记录与工程复盘。"
+empty = "正在构建"
+
+[[categories]]
+slug = "topics"
+title = "深度专题"
+code = "SYNTHESIS"
+description = "系统整理后可长期复用的内容。"
+empty = "持续沉淀"
+
+[[categories]]
+slug = "thoughts"
+title = "随想"
+code = "SIGNAL"
+description = "行业观察、个人判断与未完成想法。"
+empty = "等待信号"

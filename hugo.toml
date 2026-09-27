@@ -1,21 +1,32 @@
-﻿baseURL = "https://wqt123.github.io/"
+baseURL = "https://wqt123.github.io/"
 languageCode = "zh-cn"
-title = "神秘人哈哈哈"
+title = "WQT Agent Lab"
 hasCJKLanguage = true
 enableRobotsTXT = true
 summaryLength = 120
 
 [params]
-description = "记录学习、思考与长期积累。"
-author = "神秘人哈哈哈"
-subtitle = "把每天学到的东西，慢慢变成长期可复用的理解。"
+description = "一个 Agent 工程师持续学习、构建和思考的个人工作台。"
+subtitle = "和智能体一起，持续构建。"
 
-[permalinks]
-posts = "/posts/:slug/"
+  [params.goatcounter]
+  enabled = false
+  code = ""
+
+  [params.giscus]
+  enabled = false
+  repo = "wqt123/wqt123.github.io"
+  repoId = ""
+  category = "Announcements"
+  categoryId = ""
 
 [taxonomies]
 tag = "tags"
 series = "series"
+category = "categories"
+
+[permalinks]
+posts = "/posts/:slug/"
 
 [markup]
   [markup.goldmark]
@@ -34,18 +45,6 @@ term = ["HTML", "RSS"]
 
 [menu]
   [[menu.main]]
-    name = "首页"
-    url = "/"
-    weight = 10
-  [[menu.main]]
-    name = "文章"
-    url = "/posts/"
-    weight = 20
-  [[menu.main]]
-    name = "关于"
-    url = "/about/"
-    weight = 30
-  [[menu.main]]
     name = "GitHub"
     url = "https://github.com/wqt123"
-    weight = 40
+    weight = 10

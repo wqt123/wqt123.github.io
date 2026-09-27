@@ -1,36 +1,24 @@
 ﻿{{ define "main" }}
-  <section class="hero">
-    <div class="hero__badge">Daily Learning Log</div>
-    <h1>把每天学到的东西，慢慢变成长期理解。</h1>
-    <p>
-      这里主要记录大数据、图计算、Agent 原理、系统设计与安全相关的学习过程。
-      内容会尽量从原理出发，避免只停留在工具层。
-    </p>
-    <div class="hero__actions">
-      <a class="button button--primary" href="{{ "/posts/" | relURL }}">开始阅读</a>
-      <a class="button button--ghost" href="{{ "/about/" | relURL }}">关于我</a>
+  <section class="home-hero">
+    <div class="home-hero__main">
+      <p class="section-label">BUILD / LEARN / THINK</p>
+      <h1>和智能体一起，<span class="accent">持续构建。</span></h1>
+      <p class="home-hero__desc">{{ .Site.Params.description }}</p>
     </div>
   </section>
 
-  <section class="section-block">
-    <div class="section-block__header">
-      <h2>最新文章</h2>
-      <a href="{{ "/posts/" | relURL }}">查看全部</a>
-    </div>
-    <div class="post-grid">
-      {{ range first 6 (where .Site.RegularPages "Section" "posts").ByDate.Reverse }}
-        <article class="post-card">
-          <p class="post-card__meta">{{ .Date.Format "2006-01-02" }}</p>
-          <h3><a href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
-          <p>{{ with .Params.summary }}{{ . }}{{ else }}{{ .Summary }}{{ end }}</p>
-          {{ with .Params.tags }}
-            <div class="tag-row">
-              {{ range . }}
-                <span class="tag-chip">#{{ . }}</span>
-              {{ end }}
-            </div>
-          {{ end }}
-        </article>
+  <section class="content-map" aria-label="内容分类">
+    <div class="category-paths">
+      {{ range $index, $category := .Site.Data.categories.categories }}
+        {{ $term := $.Site.GetPage (printf "/categories/%s" $category.slug) }}
+        <a class="category-path" href="{{ $term.RelPermalink }}">
+          <span class="category-path__code">{{ printf "%02d" (add $index 1) }} / {{ $category.code }}</span>
+          <h3>{{ $category.title }}</h3>
+          <p>{{ $category.description }}</p>
+          <span class="category-path__state">
+            {{- if gt (len $term.Pages) 0 }}{{ len $term.Pages }} 篇{{ else }}{{ $category.empty }}<span class="pill">EMPTY</span>{{ end -}}
+          </span>
+        </a>
       {{ end }}
     </div>
   </section>

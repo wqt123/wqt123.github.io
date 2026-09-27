@@ -1,0 +1,8 @@
+{{- $page := . -}}
+{{- $slug := $page.Params.category | default "" -}}
+{{- $valid := slice "notes" "projects" "topics" "thoughts" -}}
+{{- if not (in $valid $slug) -}}
+  {{- errorf "post %q must define one category from %v" $page.File.Path $valid -}}
+{{- end -}}
+{{- $matches := where $page.Site.Data.categories.categories "slug" $slug -}}
+{{- return (index $matches 0) -}}

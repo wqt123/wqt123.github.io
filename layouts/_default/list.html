@@ -1,26 +1,45 @@
 {{ define "main" }}
-  <section class="content-header">
-    <p class="eyebrow">{{ .Section | default "List" }}</p>
-    <h1>{{ .Title }}</h1>
-    {{ with .Description }}<p class="content-description">{{ . }}</p>{{ end }}
-  </section>
-
-  <section class="post-list">
-    {{ range .Pages.ByDate.Reverse }}
-      <article class="post-item">
-        <div class="post-item__meta">{{ .Date.Format "2006-01-02" }}</div>
-        <div class="post-item__body">
-          <h2><a href="{{ .RelPermalink }}">{{ .Title }}</a></h2>
-          <p>{{ with .Params.summary }}{{ . }}{{ else }}{{ .Summary }}{{ end }}</p>
-          {{ with .Params.tags }}
-            <div class="tag-row">
-              {{ range . }}
-                <span class="tag-chip">#{{ . }}</span>
-              {{ end }}
+  {{ if eq .Kind "taxonomy" }}
+    <section class="posts-page">
+      <p class="section-label">ALL TOPICS</p>
+      <h1>{{ .Title }}</h1>
+      <div class="post-directory">
+        {{ range .Data.Terms.Alphabetical }}
+          <article class="post-directory__item">
+            <div class="post-directory__meta">
+              <b>{{ len .Pages }}</b>
+              <time>文章</time>
             </div>
-          {{ end }}
-        </div>
-      </article>
-    {{ end }}
-  </section>
+            <div>
+              <h2><a href="{{ .Page.RelPermalink }}">{{ .Page.Title }}</a></h2>
+            </div>
+          </article>
+        {{ end }}
+        {{ if not .Data.Terms }}<p class="empty-state">这里还没有内容。</p>{{ end }}
+      </div>
+    </section>
+  {{ else }}
+    <section class="posts-page">
+      <p class="section-label">ALL POSTS</p>
+      <h1>{{ .Title }}</h1>
+      {{ with .Description }}<p class="lede">{{ . }}</p>{{ end }}
+      <div class="post-directory">
+        {{ range .Pages.ByDate.Reverse }}
+          {{ $category := partial "category-data.html" . }}
+          <article class="post-directory__item">
+            <div class="post-directory__meta">
+              <b>{{ $category.title }}</b>
+              <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2006-01-02" }}</time>
+            </div>
+            <div>
+              <h2><a href="{{ .RelPermalink }}">{{ .Title }}</a></h2>
+              <p>{{ with .Params.summary }}{{ . }}{{ else }}{{ .Summary }}{{ end }}</p>
+              {{ partial "tag-list.html" . }}
+            </div>
+          </article>
+        {{ end }}
+        {{ if not .Pages }}<p class="empty-state">这里还没有文章。</p>{{ end }}
+      </div>
+    </section>
+  {{ end }}
 {{ end }}

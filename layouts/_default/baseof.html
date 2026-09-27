@@ -10,33 +10,28 @@
   <link rel="stylesheet" href="{{ "css/main.css" | relURL }}">
 </head>
 <body>
-  <div class="site-shell">
-    <header class="site-header">
-      <div class="site-header__inner">
-        <a class="site-title" href="{{ "/" | relURL }}">{{ .Site.Title }}</a>
-        <p class="site-subtitle">{{ .Site.Params.subtitle }}</p>
-        <nav class="site-nav" aria-label="主导航">
-          {{ range .Site.Menus.main }}
-            <a
-              href="{{ .URL }}"
-              {{ if hasPrefix .URL "http" }}target="_blank" rel="noreferrer"{{ end }}
-            >{{ .Name }}</a>
-          {{ end }}
-        </nav>
-      </div>
-    </header>
+  <a class="skip-link" href="#main-content">跳到正文</a>
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a class="site-mark" href="{{ "/" | relURL }}">WQT<span class="dot" aria-hidden="true">●</span>AGENT LAB</a>
+      <nav class="site-nav" aria-label="主导航">
+        {{ range .Site.Menus.main }}
+          <a href="{{ .URL }}"{{ if hasPrefix .URL "http" }} target="_blank" rel="noreferrer"{{ end }}>{{ .Name }}</a>
+        {{ end }}
+      </nav>
+    </div>
+  </header>
 
-    <main class="site-main">
-      {{ block "main" . }}{{ end }}
-    </main>
+  <main id="main-content" class="site-main">
+    {{ block "main" . }}{{ end }}
+  </main>
 
-    <footer class="site-footer">
-      <p>
-        由 Hugo 与 GitHub Pages 免费构建。
-        <a href="https://github.com/wqt123" target="_blank" rel="noreferrer">GitHub @wqt123</a>
-      </p>
-    </footer>
-  </div>
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <span>{{ .Site.Title }} · {{ .Site.Params.subtitle }}</span>
+      <a href="{{ "index.xml" | relURL }}">RSS</a>
+    </div>
+  </footer>
   <script type="module" src="{{ "js/mermaid-init.js" | relURL }}"></script>
 </body>
 </html>

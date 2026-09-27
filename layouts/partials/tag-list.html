@@ -1,0 +1,7 @@
+{{- with .Params.tags }}
+  <p class="tag-list">
+    {{- range . }}
+      <a href="{{ printf "/tags/%s/" (. | urlize) | relURL }}">#{{ . }}</a>
+    {{- end }}
+  </p>
+{{- end }}

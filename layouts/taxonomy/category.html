@@ -1,0 +1,28 @@
+{{ define "main" }}
+  {{ $slug := .Data.Term }}
+  {{ $matches := where .Site.Data.categories.categories "slug" $slug }}
+  {{ $category := index $matches 0 }}
+  <section class="posts-page">
+    <p class="section-label">{{ $category.code }}</p>
+    <h1>{{ $category.title }}</h1>
+    <p class="lede">{{ $category.description }}</p>
+    <div class="post-directory">
+      {{ range .Pages.ByDate.Reverse }}
+        <article class="post-directory__item">
+          <div class="post-directory__meta">
+            <b>{{ $category.title }}</b>
+            <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2006-01-02" }}</time>
+          </div>
+          <div>
+            <h2><a href="{{ .RelPermalink }}">{{ .Title }}</a></h2>
+            <p>{{ with .Params.summary }}{{ . }}{{ else }}{{ .Summary }}{{ end }}</p>
+            {{ partial "tag-list.html" . }}
+          </div>
+        </article>
+      {{ end }}
+      {{ if not .Pages }}
+        <p class="empty-state">{{ $category.empty }}。从首页的其他分类进入看看。</p>
+      {{ end }}
+    </div>
+  </section>
+{{ end }}

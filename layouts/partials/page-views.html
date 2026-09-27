@@ -1,0 +1,5 @@
+<span class="page-views" aria-label="文章浏览量"><span id="page-view-count" data-path="{{ .RelPermalink }}">—</span> 次阅读</span>
+{{ if and hugo.IsProduction .Site.Params.goatcounter.enabled .Site.Params.goatcounter.code }}
+  <script data-goatcounter="https://{{ .Site.Params.goatcounter.code }}.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+  <script type="module" src="{{ "js/page-views.js" | relURL }}"></script>
+{{ end }}
