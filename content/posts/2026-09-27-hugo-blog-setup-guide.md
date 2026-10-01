@@ -193,7 +193,7 @@ tags: ["hugo", "github-pages"]
 
 ### single：文章页
 
-文章页组装了分类标签、日期、阅读时长、浏览量占位、条件粘性目录和评论区：
+文章页组装了分类标签、日期、阅读时长、条件粘性目录和正文：
 
 ```go-html-template
 <article class="article-page">
@@ -294,31 +294,7 @@ jobs:
 1. Build and deployment → Source 选择 **GitHub Actions**（不是"从分支部署"！）
 2. 之后每次 `git push main`，自动完成 构建 → 上传产物 → 发布
 
-## 十、评论与浏览量
-
-文章页做了两个轻量集成，都遵循"**第三方失败不影响阅读**"的原则：
-
-- **浏览量**：GoatCounter，免费、隐私友好，只在文章页加载计数
-- **评论**：Giscus，评论数据存在仓库的 GitHub Discussions 里，评论者用 GitHub 账号登录
-
-两个集成都通过 `hugo.toml` 参数控制开关：
-
-```toml
-[params.goatcounter]
-enabled = false
-code = ""
-
-[params.giscus]
-enabled = false
-repo = "wqt123/wqt123.github.io"
-repoId = ""
-category = "Announcements"
-categoryId = ""
-```
-
-未配置时显示稳定的占位状态（`— 次阅读`、"评论区尚未启用"），拿到外部配置后开启即可，不需要改模板。
-
-## 十一、踩过的坑
+## 十、踩过的坑
 
 1. **hugo.toml 带 BOM 导致解析失败**：编辑器存了带 BOM 的 TOML，报 `invalid character at start of key`。用 `python3 -c` 去掉前三个字节即可
 2. **Pages 部署源是分支部署，线上一直是旧静态文件**：这是最隐蔽的坑。Actions 明明构建成功，线上却纹丝不动——因为仓库之前是"从分支部署"，直接发布仓库根目录里的旧 HTML。切换 Source 到 GitHub Actions 才真正走构建产物
@@ -326,9 +302,9 @@ categoryId = ""
 4. **本地与 CI 版本不一致**：模板语法（如 `partial` 返回值、`errorf`）在不同版本行为有差异，必须锁定同一版本
 5. **构建成功 ≠ 部署成功**：本地 `hugo --minify` 通过只是第一步，最终要以线上 URL 的实际响应为准验证
 
-## 十二、成本与小结
+## 十一、成本与小结
 
-- **钱**：0 元。Hugo 免费、GitHub Pages 免费、GoatCounter 免费
+- **钱**：0 元。Hugo 免费、GitHub Pages 免费
 - **维护**：写文章就是加一个 Markdown 文件，推上去自动上线
 - **控制权**：所有代码、内容、样式都在自己仓库里
 
