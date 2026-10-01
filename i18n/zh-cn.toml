@@ -1,0 +1,53 @@
+[skip_to_content]
+other = "跳到正文"
+
+[nav_label]
+other = "主导航"
+
+[content_map_label]
+other = "内容分类"
+
+[all_posts_label]
+other = "ALL POSTS"
+
+[all_topics_label]
+other = "ALL TOPICS"
+
+[posts_word]
+other = "文章"
+
+[empty_posts]
+other = "这里还没有文章。"
+
+[empty_content]
+other = "这里还没有内容。"
+
+[empty_category]
+other = "{{ . }}。从首页的其他分类进入看看。"
+
+[posts_count]
+other = "{{ . }} 篇"
+
+[reading_time]
+other = "约 {{ . }} 分钟"
+
+[toc_label]
+other = "目录"
+
+[views_aria]
+other = "文章浏览量"
+
+[views_label_suffix]
+other = " 次阅读"
+
+[comments_title]
+other = "评论"
+
+[comments_disabled]
+other = "评论区尚未启用。接入 GitHub Discussions 后可在此留言。"
+
+[comments_noscript]
+other = "请启用 JavaScript，或前往 GitHub Discussions 参与讨论。"
+
+[switch_language]
+other = "EN"

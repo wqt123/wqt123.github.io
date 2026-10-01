@@ -1,0 +1,53 @@
+[skip_to_content]
+other = "Skip to content"
+
+[nav_label]
+other = "Main navigation"
+
+[content_map_label]
+other = "Content categories"
+
+[all_posts_label]
+other = "ALL POSTS"
+
+[all_topics_label]
+other = "ALL TOPICS"
+
+[posts_word]
+other = "posts"
+
+[empty_posts]
+other = "No posts yet."
+
+[empty_content]
+other = "Nothing here yet."
+
+[empty_category]
+other = "{{ . }}. Check out other categories from the homepage."
+
+[posts_count]
+other = "{{ . }} posts"
+
+[reading_time]
+other = "{{ . }} min read"
+
+[toc_label]
+other = "Contents"
+
+[views_aria]
+other = "Article views"
+
+[views_label_suffix]
+other = " reads"
+
+[comments_title]
+other = "Comments"
+
+[comments_disabled]
+other = "Comments are not enabled yet. Once GitHub Discussions is connected, you can leave a message here."
+
+[comments_noscript]
+other = "Please enable JavaScript, or join the discussion on GitHub Discussions."
+
+[switch_language]
+other = "中文"

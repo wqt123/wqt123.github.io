@@ -1,20 +1,36 @@
 ﻿<!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="{{ .Site.Language.LanguageCode }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }} | {{ .Site.Title }}{{ end }}</title>
   <meta name="description" content="{{ with .Params.summary }}{{ . }}{{ else }}{{ with .Description }}{{ . }}{{ else }}{{ .Site.Params.description }}{{ end }}{{ end }}">
   <link rel="canonical" href="{{ .Permalink }}">
+  {{ if .IsTranslated }}
+    {{ range .Translations }}
+      <link rel="alternate" hreflang="{{ .Language.LanguageCode }}" href="{{ .Permalink }}">
+    {{ end }}
+  {{ end }}
   <link rel="alternate" type="application/rss+xml" title="{{ .Site.Title }}" href="{{ "index.xml" | absURL }}">
   <link rel="stylesheet" href="{{ "css/main.css" | relURL }}">
 </head>
 <body>
-  <a class="skip-link" href="#main-content">跳到正文</a>
+  <a class="skip-link" href="#main-content">{{ i18n "skip_to_content" }}</a>
   <header class="site-header">
     <div class="site-header__inner">
       <a class="site-mark" href="{{ "/" | relURL }}">WQT<span class="dot" aria-hidden="true">●</span>AGENT LAB</a>
-      <nav class="site-nav" aria-label="主导航">
+      <nav class="site-nav" aria-label="{{ i18n "nav_label" }}">
+        {{ if .IsTranslated }}
+          {{ range .Translations }}
+            <a class="lang-link" href="{{ .RelPermalink }}" lang="{{ .Language.LanguageCode }}">{{ i18n "switch_language" }}</a>
+          {{ end }}
+        {{ else }}
+          {{ if eq .Lang "zh-cn" }}
+            <a class="lang-link" href="{{ "/en/" | relURL }}">{{ i18n "switch_language" }}</a>
+          {{ else }}
+            <a class="lang-link" href="{{ "/" | relURL }}">{{ i18n "switch_language" }}</a>
+          {{ end }}
+        {{ end }}
         {{ range .Site.Menus.main }}
           <a href="{{ .URL }}"{{ if hasPrefix .URL "http" }} target="_blank" rel="noreferrer"{{ end }}>{{ .Name }}</a>
         {{ end }}

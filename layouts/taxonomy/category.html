@@ -1,6 +1,6 @@
 {{ define "main" }}
   {{ $slug := .Data.Term }}
-  {{ $matches := where .Site.Data.categories.categories "slug" $slug }}
+  {{ $matches := where (index .Site.Data .Site.Language.Lang).categories.categories "slug" $slug }}
   {{ $category := index $matches 0 }}
   <section class="posts-page">
     <p class="section-label">{{ $category.code }}</p>
@@ -21,7 +21,7 @@
         </article>
       {{ end }}
       {{ if not .Pages }}
-        <p class="empty-state">{{ $category.empty }}。从首页的其他分类进入看看。</p>
+        <p class="empty-state">{{ i18n "empty_category" $category.empty }}</p>
       {{ end }}
     </div>
   </section>

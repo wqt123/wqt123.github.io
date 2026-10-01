@@ -1,0 +1,27 @@
+[[categories]]
+slug = "notes"
+title = "Notes"
+code = "INPUT"
+description = "Concept breakdowns, paper reading, tool exploration."
+empty = "Accumulating"
+
+[[categories]]
+slug = "projects"
+title = "Projects"
+code = "BUILD"
+description = "Real implementations, lessons learned, engineering retrospectives."
+empty = "Building"
+
+[[categories]]
+slug = "topics"
+title = "Topics"
+code = "SYNTHESIS"
+description = "Systematically organized knowledge for long-term reuse."
+empty = "Synthesizing"
+
+[[categories]]
+slug = "thoughts"
+title = "Thoughts"
+code = "SIGNAL"
+description = "Industry observations, personal judgments, unfinished ideas."
+empty = "Waiting for signal"

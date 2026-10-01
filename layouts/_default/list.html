@@ -1,26 +1,26 @@
 {{ define "main" }}
   {{ if eq .Kind "taxonomy" }}
     <section class="posts-page">
-      <p class="section-label">ALL TOPICS</p>
+      <p class="section-label">{{ i18n "all_topics_label" }}</p>
       <h1>{{ .Title }}</h1>
       <div class="post-directory">
         {{ range .Data.Terms.Alphabetical }}
           <article class="post-directory__item">
             <div class="post-directory__meta">
               <b>{{ len .Pages }}</b>
-              <time>文章</time>
+              <time>{{ i18n "posts_word" }}</time>
             </div>
             <div>
               <h2><a href="{{ .Page.RelPermalink }}">{{ .Page.Title }}</a></h2>
             </div>
           </article>
         {{ end }}
-        {{ if not .Data.Terms }}<p class="empty-state">这里还没有内容。</p>{{ end }}
+        {{ if not .Data.Terms }}<p class="empty-state">{{ i18n "empty_content" }}</p>{{ end }}
       </div>
     </section>
   {{ else }}
     <section class="posts-page">
-      <p class="section-label">ALL POSTS</p>
+      <p class="section-label">{{ i18n "all_posts_label" }}</p>
       <h1>{{ .Title }}</h1>
       {{ with .Description }}<p class="lede">{{ . }}</p>{{ end }}
       <div class="post-directory">
@@ -38,7 +38,7 @@
             </div>
           </article>
         {{ end }}
-        {{ if not .Pages }}<p class="empty-state">这里还没有文章。</p>{{ end }}
+        {{ if not .Pages }}<p class="empty-state">{{ i18n "empty_posts" }}</p>{{ end }}
       </div>
     </section>
   {{ end }}

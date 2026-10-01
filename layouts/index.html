@@ -2,21 +2,21 @@
   <section class="home-hero">
     <div class="home-hero__main">
       <p class="section-label">BUILD / LEARN / THINK</p>
-      <h1>和智能体一起，<span class="accent">持续构建。</span></h1>
+      <h1>{{ .Site.Params.hero_line1 }}<span class="accent">{{ .Site.Params.hero_line2 }}</span></h1>
       <p class="home-hero__desc">{{ .Site.Params.description }}</p>
     </div>
   </section>
 
-  <section class="content-map" aria-label="内容分类">
+  <section class="content-map" aria-label="{{ i18n "content_map_label" }}">
     <div class="category-paths">
-      {{ range $index, $category := .Site.Data.categories.categories }}
+      {{ range $index, $category := (index .Site.Data .Site.Language.Lang).categories.categories }}
         {{ $term := $.Site.GetPage (printf "/categories/%s" $category.slug) }}
         <a class="category-path" href="{{ $term.RelPermalink }}">
           <span class="category-path__code">{{ printf "%02d" (add $index 1) }} / {{ $category.code }}</span>
           <h3>{{ $category.title }}</h3>
           <p>{{ $category.description }}</p>
           <span class="category-path__state">
-            {{- if gt (len $term.Pages) 0 }}{{ len $term.Pages }} 篇{{ else }}{{ $category.empty }}<span class="pill">EMPTY</span>{{ end -}}
+            {{- if gt (len $term.Pages) 0 }}{{ i18n "posts_count" (len $term.Pages) }}{{ else }}{{ $category.empty }}<span class="pill">EMPTY</span>{{ end -}}
           </span>
         </a>
       {{ end }}

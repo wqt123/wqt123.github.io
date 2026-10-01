@@ -1,16 +1,17 @@
 <section id="comments" class="comments" aria-labelledby="comments-title">
   <p class="section-label">DISCUSSION</p>
-  <h2 id="comments-title">评论</h2>
+  <h2 id="comments-title">{{ i18n "comments_title" }}</h2>
   {{- $g := .Site.Params.giscus }}
+  {{- $lang := cond (eq .Site.Language.LanguageCode "zh-cn") "zh-CN" "en" }}
   {{- if and $g.enabled $g.repo $g.repoId $g.category $g.categoryId }}
     <script src="https://giscus.app/client.js"
       data-repo="{{ $g.repo }}" data-repo-id="{{ $g.repoId }}"
       data-category="{{ $g.category }}" data-category-id="{{ $g.categoryId }}"
       data-mapping="pathname" data-strict="1" data-reactions-enabled="1"
       data-emit-metadata="0" data-input-position="top" data-theme="light"
-      data-lang="zh-CN" data-loading="lazy" crossorigin="anonymous" async></script>
-    <noscript>请启用 JavaScript，或前往 <a href="https://github.com/{{ $g.repo }}/discussions">GitHub Discussions</a> 参与讨论。</noscript>
+      data-lang="{{ $lang }}" data-loading="lazy" crossorigin="anonymous" async></script>
+    <noscript>{{ i18n "comments_noscript" }} <a href="https://github.com/{{ $g.repo }}/discussions">GitHub Discussions</a></noscript>
   {{- else }}
-    <p class="integration-message">评论区尚未启用。接入 GitHub Discussions 后可在此留言。</p>
+    <p class="integration-message">{{ i18n "comments_disabled" }}</p>
   {{- end }}
 </section>
