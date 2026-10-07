@@ -218,14 +218,22 @@ The post page assembles in a fixed order: header (category, date, reading time) 
 
 ### Iterating the visual design with AI
 
-Templates answer "how it is implemented"; this section answers "why it looks like this". I did not install a theme — instead I handed the design requirements to Doubao Work (an AI agent):
+Templates answer "how it is implemented"; this section answers "why it looks like this". I did not install a theme — instead I handed the design requirements to Doubao Work (an AI agent). The key is **giving direction, not answers**: let it first understand the existing site, then produce several high-fidelity directions to compare in the browser, give feedback round after round, and finally translate the approved direction into templates and CSS.
 
-1. First let it get familiar with the existing site: read the structure, read the styles, understand "what it looks like now"
-2. Produce several explicit design directions (high-fidelity HTML mockups), each covering the homepage, the post list, and the reading page, so they can be compared directly in the browser
-3. Give feedback round after round: remove the "current focus" block, remove section titles, keep only GitHub in the navigation… after each change the AI automatically screenshots and checks layout and overflow
-4. After sign-off, translate the approved direction into Hugo templates and CSS tokens
+The prompt that guides the AI looks roughly like this (you can copy and adapt it):
 
-The final direction is "Signal White · Editorial Lab": true white background, indigo primary color, amber signal dots, zero border radius, editorial-magazine typography. The design principle is **restraint** — the homepage has only a main tagline and four category entries, no post stream, no card stacking. The value of AI is not "generating a website" but turning "the website I imagine" into "the website that actually runs", step by step.
+```text
+Get familiar with this Hugo blog: read content/, layouts/ and static/css
+to understand how it looks today.
+Give me 3 different visual directions, each as high-fidelity HTML covering
+the homepage, the post list, and the reading page, opened in the browser
+for comparison. Requirements: the design must have a clear point of view,
+not the default template look.
+```
+
+Then give feedback round by round, for example: "remove the 'current focus' block from the homepage", "keep only GitHub in the navigation", "switch the primary color to indigo with zero border radius". After each change, have the AI screenshot and self-check; only move to the next round when there is no layout overflow.
+
+The final sign-off is "Signal White · Editorial Lab": true white background, indigo primary color, amber signal dots, zero border radius, editorial-magazine typography, with **restraint** as the principle — the homepage has only a main tagline and four category entries. The value of AI is not "generating a website" but turning "the website I imagine" into "the website that actually runs", step by step.
 
 ## 5. Build and deploy
 
