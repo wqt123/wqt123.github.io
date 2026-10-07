@@ -1,22 +1,11 @@
 (function () {
   var el = document.getElementById('page-view-count');
-  if (!el) return;
-  var started = Date.now();
-  var timer = setInterval(function () {
-    if (window.goatcounter && window.goatcounter.visit_count) {
-      clearInterval(timer);
-      el.textContent = '';
-      try {
-        window.goatcounter.visit_count({
-          append: '#page-view-count',
-          no_branding: true,
-          path: el.dataset.path
-        });
-      } catch (err) {
-        el.textContent = '—';
-      }
-    } else if (Date.now() - started > 5000) {
-      clearInterval(timer);
-    }
-  }, 100);
+  if (!el || !el.dataset.path) return;
+  var url = 'https://wqtblob.goatcounter.com/counter/' + encodeURIComponent(el.dataset.path) + '.json';
+  fetch(url)
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) {
+      if (d && d.count) el.textContent = d.count;
+    })
+    .catch(function () {});
 })();
