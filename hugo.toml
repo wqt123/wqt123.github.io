@@ -16,8 +16,8 @@ posts = "/posts/:slug/"
 
 [params]
   [params.goatcounter]
-  enabled = false
-  code = ""
+  enabled = true
+  code = "wqtblob"
 
   [params.giscus]
   enabled = false
