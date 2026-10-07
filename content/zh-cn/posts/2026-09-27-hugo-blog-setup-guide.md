@@ -322,10 +322,12 @@ jobs:
 展示端我没有用官方徽章 iframe（自带边框和 "by GoatCounter" 字样，和"信号白"的克制排版不搭），而是请求官方 **JSON 端点**，把数字渲染成纯文本：
 
 ```js
-fetch('https://wqtblob.goatcounter.com/counter/' + encodeURIComponent(path) + '.json')
+fetch('https://MYCODE.goatcounter.com/counter/' + encodeURIComponent(path) + '.json')
   .then(r => r.json())
   .then(d => { el.textContent = d.count; })
 ```
+
+`MYCODE` 是你注册时选择的账号名（形如 `你的账号.goatcounter.com`），属于账号级标识，示例用占位符代替。
 
 两个实践细节：
 
@@ -340,15 +342,15 @@ fetch('https://wqtblob.goatcounter.com/counter/' + encodeURIComponent(path) + '.
 
 1. 仓库 Settings → Features 启用 **Discussions**，分类选 **Announcements**（只有维护者能开帖，评论不会被刷屏）
 2. 安装 **giscus GitHub App**（授权时只勾选博客仓库，最小权限）
-3. 拿到两个 ID 填进 `hugo.toml`：仓库的 `node_id`（repoId）和分类的 `id`（categoryId）
+3. 在 giscus.app 配置页选择仓库与分类后，页面会自动生成 `data-repo-id` 和 `data-category-id`——这两个是账号级标识，不写进公开内容。配置长这样：
 
 ```toml
 [params.giscus]
 enabled = true
-repo = "wqt123/wqt123.github.io"
-repoId = "R_kgDOR_3m8Q"
+repo = "你的用户名/你的博客仓库"
+repoId = "在 giscus.app 自动生成"
 category = "Announcements"
-categoryId = "DIC_kwDOR_3m8c4DHOK6"
+categoryId = "在 giscus.app 自动生成"
 ```
 
 4. 文章页挂 giscus 的 `client.js`，配置 `data-mapping="pathname"`——按页面路径自动匹配对应讨论

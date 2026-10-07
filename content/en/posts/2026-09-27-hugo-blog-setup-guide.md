@@ -322,10 +322,12 @@ Two settings must be turned on manually in the GoatCounter dashboard, or the cou
 For display I did not use the official badge iframe (it ships with a border and a "by GoatCounter" label that clashes with the restrained Signal White design). Instead I query the official **JSON endpoint** and render the number as plain text:
 
 ```js
-fetch('https://wqtblob.goatcounter.com/counter/' + encodeURIComponent(path) + '.json')
+fetch('https://MYCODE.goatcounter.com/counter/' + encodeURIComponent(path) + '.json')
   .then(r => r.json())
   .then(d => { el.textContent = d.count; })
 ```
+
+`MYCODE` is the account name you chose at signup (of the form `your-account.goatcounter.com`); it is an account-level identifier, so the example uses a placeholder.
 
 Two practical notes:
 
@@ -340,15 +342,15 @@ Setup steps:
 
 1. Enable **Discussions** in repo Settings → Features, choosing the **Announcements** category (only maintainers can open threads, so comments cannot be spammed)
 2. Install the **giscus GitHub App** (grant access to the blog repository only — least privilege)
-3. Grab two IDs and put them in `hugo.toml`: the repository's `node_id` (repoId) and the category's `id` (categoryId)
+3. On the giscus.app config page, after picking the repository and category, the page generates `data-repo-id` and `data-category-id` for you — these are account-level identifiers and are not published in public content. The config looks like this:
 
 ```toml
 [params.giscus]
 enabled = true
-repo = "wqt123/wqt123.github.io"
-repoId = "R_kgDOR_3m8Q"
+repo = "your-username/your-blog-repo"
+repoId = "generated automatically on giscus.app"
 category = "Announcements"
-categoryId = "DIC_kwDOR_3m8c4DHOK6"
+categoryId = "generated automatically on giscus.app"
 ```
 
 4. Mount giscus's `client.js` on the post page with `data-mapping="pathname"` — each page path automatically matches its own discussion
