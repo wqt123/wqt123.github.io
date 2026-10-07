@@ -31,7 +31,9 @@ Among static site generators, I compared Jekyll, Hexo and Hugo, and the reasons 
 - **Powerful templates**: `baseof` inheritance, `partials` reuse, and native taxonomy support are enough to express custom designs without modifying theme source code
 - **Data-driven**: with the `data/` directory plus template iteration, metadata like "category definitions" can be a single source of truth
 
-## 2. Overall architecture
+## 2. Site architecture
+
+### Overall architecture
 
 ```mermaid
 flowchart LR
@@ -46,7 +48,7 @@ flowchart LR
 - **GitHub Actions**: auto-builds and publishes after every push to `main` — no manual uploads at all
 - **AI agent (Doubao Work)**: collaborates directly in the local repository — reading the project, writing templates, iterating design, running commands, committing and pushing
 
-## 3. Directory structure
+### Directory structure
 
 A Hugo site has only a few core directories:
 
@@ -79,7 +81,9 @@ wqt123.github.io/
 
 The key insight: **`content/` holds content, `layouts/` holds structure, `data/` holds metadata, `static/` holds assets.** These four are decoupled — that is why the Hugo template system is pleasant to work with.
 
-## 4. Configuration: hugo.toml
+## 3. Content and configuration
+
+### Configuration: hugo.toml
 
 Core configuration of this blog (excerpt):
 
@@ -110,7 +114,7 @@ A few points worth noting:
 - `permalinks`: post URLs use `:slug`, hiding dates for stable long-term references
 - `summaryLength`: controls how much body text is truncated on list pages
 
-## 5. Content organization: sections and taxonomies
+### Content organization: sections and taxonomies
 
 The fastest way for a personal blog to lose control is "content without structure". I use a two-layer model:
 
@@ -150,7 +154,7 @@ tags: ["hugo", "github-pages"]
 
 **Turning content conventions into engineering constraints**: a partial specifically validates category legality — a post without a category, or with a category not in the definition table, fails the build. Enforce it at build time instead of relying on discipline.
 
-## 6. Template system
+## 4. Templates and design
 
 ### baseof: the site-wide skeleton
 
@@ -216,7 +220,7 @@ The post page assembles the category label, date, reading time, a conditional st
 
 Note `{{ .TableOfContents }}`: Hugo natively generates the table-of-contents HTML, and the template only needs to decide "show the sidebar TOC if the content is long enough". Long posts automatically get a TOC; short posts do not waste layout space.
 
-## 7. Iterating the visual design with AI
+### Iterating the visual design with AI
 
 This is the most interesting part. I did not install a theme — instead I handed the design requirements to Doubao Work (an AI agent):
 
@@ -227,7 +231,9 @@ This is the most interesting part. I did not install a theme — instead I hande
 
 The final direction is "Signal White · Editorial Lab": true white background, indigo primary color, amber signal dots, zero border radius, editorial-magazine typography. The design principle is **restraint** — the homepage has only a main tagline and four category entries, no post stream, no card stacking. The value of AI is not "generating a website" but turning "the website I imagine" into "the website that actually runs", step by step.
 
-## 8. Local build and preview
+## 5. Build and deploy
+
+### Local build and preview
 
 Installation (a version identical to CI):
 
@@ -249,7 +255,7 @@ HUGO_ENVIRONMENT=production hugo --minify   # production build, output to public
 
 **Version alignment principle**: your local version must exactly match `hugo-version` in the CI workflow, otherwise template syntax differences will explode online. The `extended` build is mandatory, or SCSS/SASS-related template compilation fails.
 
-## 9. Auto-deploy: GitHub Pages + Actions
+### Auto-deploy: GitHub Pages + Actions
 
 The core of deployment is `.github/workflows/hugo.yml`:
 
@@ -294,7 +300,64 @@ The **one-time setup** that goes with it (GitHub repo Settings → Pages):
 1. Build and deployment → set Source to **GitHub Actions** (not "Deploy from a branch"!)
 2. From then on, every `git push main` automatically runs build → upload artifact → publish
 
-## 10. Pitfalls we hit
+## 6. Analytics and comments
+
+After the blog went live, I added the two things every content site is expected to have: pageview analytics and reader comments. Both follow the same maintenance philosophy as the rest of the site — **free, data under your control, no self-hosted backend**.
+
+### Pageviews: GoatCounter
+
+During evaluation I compared Umami, Plausible and Busuanzi, and ended up with GoatCounter:
+
+- **Free tier of 100k pageviews/month**, enough for a personal blog
+- **Privacy-friendly**: no cookies, no per-person tracking
+- Data is exportable, and it supports self-hosting (again a single binary)
+
+Integration happens in three layers: **reporting** (a `count.js` script on the page sends visits to GoatCounter), **dashboard** (PV/UV, referrers, top pages), and **display** (the view count in the post meta area).
+
+Two settings must be turned on manually in the GoatCounter dashboard, or the counter endpoint returns 403:
+
+- **Dashboard viewable by → Anyone** (public stats): the visitor counter only works for public sites
+- **Allow adding visitor counts on your website**: off by default
+
+For display I did not use the official badge iframe (it ships with a border and a "by GoatCounter" label that clashes with the restrained Signal White design). Instead I query the official **JSON endpoint** and render the number as plain text:
+
+```js
+fetch('https://wqtblob.goatcounter.com/counter/' + encodeURIComponent(path) + '.json')
+  .then(r => r.json())
+  .then(d => { el.textContent = d.count; })
+```
+
+Two practical notes:
+
+- **Counts are cached for up to 4 hours**: numbers for a new page or a first visit do not appear immediately — that is expected
+- **Self-host the script**: the official CDN (`gc.zgo.at`) is unreachable from mainland China networks, so I downloaded `count.js` into `static/js/`; static JS gets a Hugo fingerprint hash so browsers never serve a stale cached version
+
+### Comments: Giscus
+
+I compared utterances, Twikoo and Waline, and chose **Giscus**: comment data lives directly in **your repository's GitHub Discussions** — no database, no backend, free forever. Visitors comment with their GitHub account, and you manage every comment on GitHub itself.
+
+Setup steps:
+
+1. Enable **Discussions** in repo Settings → Features, choosing the **Announcements** category (only maintainers can open threads, so comments cannot be spammed)
+2. Install the **giscus GitHub App** (grant access to the blog repository only — least privilege)
+3. Grab two IDs and put them in `hugo.toml`: the repository's `node_id` (repoId) and the category's `id` (categoryId)
+
+```toml
+[params.giscus]
+enabled = true
+repo = "wqt123/wqt123.github.io"
+repoId = "R_kgDOR_3m8Q"
+category = "Announcements"
+categoryId = "DIC_kwDOR_3m8c4DHOK6"
+```
+
+4. Mount giscus's `client.js` on the post page with `data-mapping="pathname"` — each page path automatically matches its own discussion
+
+I chose the `pathname` mapping: **every post automatically maps to one Discussion**, visitor comments land under that post's title, and there is nothing to create manually.
+
+## 7. Retrospective
+
+### Pitfalls we hit
 
 1. **A BOM in hugo.toml breaks parsing**: the editor saved a TOML with a BOM, and Hugo reported `invalid character at start of key`. Strip the first three bytes with `python3 -c` and it is fine
 2. **Pages was in branch-deploy mode, so the live site kept serving old static files**: this is the sneakiest pitfall. Actions built successfully, yet the live site did not move — because the repository was previously "deploying from a branch", publishing the old HTML at the repo root. Switching the Source to GitHub Actions finally made it serve the build output
@@ -302,7 +365,7 @@ The **one-time setup** that goes with it (GitHub repo Settings → Pages):
 4. **Local and CI versions differ**: template behavior (partial return values, `errorf`) varies between versions, so the version must be pinned identically
 5. **A successful build ≠ a successful deploy**: passing local `hugo --minify` is only the first step; always verify against the real response of the live URL
 
-## 11. Cost and summary
+### Cost and summary
 
 - **Money**: 0. Hugo is free, GitHub Pages is free
 - **Maintenance**: writing a post means adding one Markdown file and pushing it; it goes live automatically
