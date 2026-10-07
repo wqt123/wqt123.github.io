@@ -20,11 +20,11 @@ posts = "/posts/:slug/"
   code = "wqtblob"
 
   [params.giscus]
-  enabled = false
+  enabled = true
   repo = "wqt123/wqt123.github.io"
-  repoId = ""
+  repoId = "R_kgDOR_3m8Q"
   category = "Announcements"
-  categoryId = ""
+  categoryId = "DIC_kwDOR_3m8c4DHOK6"
 
 [languages.zh-cn]
 contentDir = "content/zh-cn"
