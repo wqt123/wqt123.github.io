@@ -156,6 +156,10 @@ tags: ["hugo", "github-pages"]
 
 ## 4. Templates and design
 
+Chapter 3 was about what the site *has*: configuration, content organization and category data. This chapter is about how that content **looks on the page, and why it looks that way** — which is also why the two chapters are separate: **Chapter 3 is the content layer, Chapter 4 the presentation layer**. Changing content does not touch the looks, and changing the looks does not touch content; the two evolve independently.
+
+The five sections form one thread: first a mental model of rendering (how templates decide each page), then the design decision behind each of the three key templates (site-wide skeleton, homepage, post page), and finally where the visual design came from.
+
 ### First, how a page gets rendered
 
 Hugo separates "content" from "looks" completely: Markdown files in `content/` only carry content, and templates in `layouts/` decide what each page looks like. Rendering matches a template by **page type**:
