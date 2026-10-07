@@ -356,23 +356,3 @@ categoryId = "generated automatically on giscus.app"
 4. Mount giscus's `client.js` on the post page with `data-mapping="pathname"` — each page path automatically matches its own discussion
 
 I chose the `pathname` mapping: **every post automatically maps to one Discussion**, visitor comments land under that post's title, and there is nothing to create manually.
-
-## 7. Retrospective
-
-### Pitfalls we hit
-
-1. **A BOM in hugo.toml breaks parsing**: the editor saved a TOML with a BOM, and Hugo reported `invalid character at start of key`. Strip the first three bytes with `python3 -c` and it is fine
-2. **Pages was in branch-deploy mode, so the live site kept serving old static files**: this is the sneakiest pitfall. Actions built successfully, yet the live site did not move — because the repository was previously "deploying from a branch", publishing the old HTML at the repo root. Switching the Source to GitHub Actions finally made it serve the build output
-3. **Taxonomy list pages crash without a dedicated template**: `/categories/`, `/tags/` and similar taxonomy list pages (Kind = taxonomy) fall back to `_default/list.html`, and if list.html assumes "children are all posts" you get a nil pointer. Branch on `Kind` instead
-4. **Local and CI versions differ**: template behavior (partial return values, `errorf`) varies between versions, so the version must be pinned identically
-5. **A successful build ≠ a successful deploy**: passing local `hugo --minify` is only the first step; always verify against the real response of the live URL
-
-### Cost and summary
-
-- **Money**: 0. Hugo is free, GitHub Pages is free
-- **Maintenance**: writing a post means adding one Markdown file and pushing it; it goes live automatically
-- **Control**: all code, content and styles live in your own repository
-
-The complete Hugo pipeline: **content (Markdown) → templates (layouts) → build (hugo) → publish (Actions + Pages)**. Its core value is not "speed" but **the thorough decoupling of content and structure**: a post is plain Markdown, switching templates does not touch content; category metadata lives in `data/`, the homepage structure lives in templates, and the two never interfere. With GitHub Actions, writing becomes "write a file, push it, the site updates".
-
-> What really proves you can run a blog is not "getting it running" but "every future post gets published reliably, the way you want it to".

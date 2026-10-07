@@ -356,23 +356,3 @@ categoryId = "在 giscus.app 自动生成"
 4. 文章页挂 giscus 的 `client.js`，配置 `data-mapping="pathname"`——按页面路径自动匹配对应讨论
 
 我选 `pathname` 映射：**每篇文章自动对应一个 Discussion**，访客评论即落到该文章标题下，不需要手动创建。
-
-## 七、复盘
-
-### 踩过的坑
-
-1. **hugo.toml 带 BOM 导致解析失败**：编辑器存了带 BOM 的 TOML，报 `invalid character at start of key`。用 `python3 -c` 去掉前三个字节即可
-2. **Pages 部署源是分支部署，线上一直是旧静态文件**：这是最隐蔽的坑。Actions 明明构建成功，线上却纹丝不动——因为仓库之前是"从分支部署"，直接发布仓库根目录里的旧 HTML。切换 Source 到 GitHub Actions 才真正走构建产物
-3. **taxonomy 列表页没有专用模板会崩**：`/categories/`、`/tags/` 这类 taxonomy 列表页（Kind = taxonomy）会回退到 `_default/list.html`，如果 list.html 假设"子页面都是文章"就会 nil pointer。需要按 `Kind` 分支处理
-4. **本地与 CI 版本不一致**：模板语法（如 `partial` 返回值、`errorf`）在不同版本行为有差异，必须锁定同一版本
-5. **构建成功 ≠ 部署成功**：本地 `hugo --minify` 通过只是第一步，最终要以线上 URL 的实际响应为准验证
-
-### 成本与小结
-
-- **钱**：0 元。Hugo 免费、GitHub Pages 免费
-- **维护**：写文章就是加一个 Markdown 文件，推上去自动上线
-- **控制权**：所有代码、内容、样式都在自己仓库里
-
-Hugo 建站的完整链路：**内容（Markdown）→ 模板（layouts）→ 构建（hugo）→ 发布（Actions + Pages）**。它的核心价值不是"快"，而是**内容与结构彻底解耦**：文章就是纯 Markdown，换模板不改内容；分类元数据在 data/ 里，首页结构在模板里，两边互不打扰。配合 GitHub Actions，写作体验变成"写一个文件，推一下，线上更新"。
-
-> 真正代表你会搭博客的，不是"能跑起来"，而是"以后每一篇文章，都能稳定地、按你想要的方式发布"。
