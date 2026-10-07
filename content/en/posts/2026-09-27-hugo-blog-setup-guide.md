@@ -156,73 +156,65 @@ tags: ["hugo", "github-pages"]
 
 ## 4. Templates and design
 
-### baseof: the site-wide skeleton
+### First, how a page gets rendered
 
-All pages inherit one skeleton; navigation and footer are written once:
+Hugo separates "content" from "looks" completely: Markdown files in `content/` only carry content, and templates in `layouts/` decide what each page looks like. Rendering matches a template by **page type**:
 
-```go-html-template
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }} | {{ .Site.Title }}{{ end }}</title>
-  <link rel="stylesheet" href="{{ "css/main.css" | relURL }}">
-</head>
-<body>
-  <header class="site-header">…</header>
-  <main id="main-content" class="site-main">
-    {{ block "main" . }}{{ end }}
-  </main>
-  <footer class="site-footer">…</footer>
-</body>
-</html>
+```
+Post        content/posts/xxx.md ──→ layouts/_default/single.html
+Homepage                       ──→ layouts/index.html
+Category list                  ──→ layouts/_default/list.html
 ```
 
-### Homepage: data-driven category entries
+All of them share one baseof skeleton, so navigation and footer are common. The takeaway: **to change the looks, edit templates; to add content, write Markdown — the two never interfere**. That is the starting point for every design decision that follows.
 
-The homepage does not show a post stream. Instead it iterates `data/categories.toml` and renders four category entry cards. Data changes, the homepage changes, and the template does not move:
+### baseof: the parts written once for the whole site
+
+baseof is the site-wide skeleton: `<html>`, head meta, navigation and footer all live here, and every page inherits it. The core is a single line, `{{ block "main" . }}` — a **slot** that each specific page (homepage, post) fills in:
+
+```go-html-template
+<body>
+  <header class="site-header">…nav…</header>
+  <main id="main-content" class="site-main">
+    {{ block "main" . }}{{ end }}   <!-- page content goes here -->
+  </main>
+  <footer class="site-footer">…footer…</footer>
+</body>
+```
+
+Result: the parts shared by the whole site are written once; edit the navigation once and every page updates.
+
+### Homepage: structure driven by data
+
+The homepage does not show a hardcoded post stream. Instead it reads the category data in `data/categories.toml` and renders entry cards in a loop:
 
 ```go-html-template
 {{ range $index, $category := .Site.Data.categories.categories }}
-  {{ $term := $.Site.GetPage (printf "/categories/%s" $category.slug) }}
-  <a class="category-path" href="{{ $term.RelPermalink }}">
+  <a class="category-path" href="{{ $.Site.GetPage (printf "/categories/%s" $category.slug) }}">
     <span>{{ printf "%02d" (add $index 1) }} / {{ $category.code }}</span>
     <h3>{{ $category.title }}</h3>
-    <p>{{ $category.description }}</p>
-    <span>{{ if gt (len $term.Pages) 0 }}{{ len $term.Pages }} 篇{{ else }}{{ $category.empty }}{{ end }}</span>
   </a>
 {{ end }}
 ```
 
-### single: the post page
+Result: the homepage structure is decided by data. To add a new category later, edit one line of data — the template does not move. This is "content decoupled from structure" in practice.
 
-The post page assembles the category label, date, reading time, a conditional sticky table of contents, and the body:
+### The post page: assembling meta, TOC and body
+
+The post page assembles in a fixed order: header (category, date, reading time) → sidebar TOC → body. The line most worth noticing is the **conditional TOC**:
 
 ```go-html-template
-<article class="article-page">
-  <header class="article-head">
-    <p class="section-label">{{ $category.title }}</p>
-    <h1>{{ .Title }}</h1>
-    <div class="article-meta">
-      <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2006-01-02" }}</time>
-      <span>约 {{ .ReadingTime }} 分钟</span>
-    </div>
-  </header>
-  <div class="article-shell">
-    {{ if gt (len .TableOfContents) 40 }}
-      <aside class="article-toc">{{ .TableOfContents }}</aside>
-    {{ end }}
-    <div class="article-content">{{ .Content }}</div>
-  </div>
-</article>
+{{ if gt (len .TableOfContents) 40 }}
+  <aside class="article-toc">{{ .TableOfContents }}</aside>
+{{ end }}
+<div class="article-content">{{ .Content }}</div>
 ```
 
-Note `{{ .TableOfContents }}`: Hugo natively generates the table-of-contents HTML, and the template only needs to decide "show the sidebar TOC if the content is long enough". Long posts automatically get a TOC; short posts do not waste layout space.
+`.TableOfContents` is the TOC HTML Hugo generates natively; the template only decides "show the sidebar when the TOC is long enough". So **long posts automatically get a TOC, short posts do not waste layout space** — the capability comes from Hugo, the design trade-off is yours.
 
 ### Iterating the visual design with AI
 
-This is the most interesting part. I did not install a theme — instead I handed the design requirements to Doubao Work (an AI agent):
+Templates answer "how it is implemented"; this section answers "why it looks like this". I did not install a theme — instead I handed the design requirements to Doubao Work (an AI agent):
 
 1. First let it get familiar with the existing site: read the structure, read the styles, understand "what it looks like now"
 2. Produce several explicit design directions (high-fidelity HTML mockups), each covering the homepage, the post list, and the reading page, so they can be compared directly in the browser

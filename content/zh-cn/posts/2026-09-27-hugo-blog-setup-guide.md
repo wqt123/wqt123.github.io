@@ -156,75 +156,67 @@ tags: ["hugo", "github-pages"]
 
 ## 四、模板与设计
 
-### baseof：全站骨架
+### 先理解：页面是怎么被渲染的
 
-所有页面继承同一个骨架，导航、页脚只写一次：
+Hugo 把"内容"和"长相"彻底分开：`content/` 里的 Markdown 只负责内容，`layouts/` 里的模板决定每个页面长什么样。渲染时按**页面类型**匹配模板：
 
-```go-html-template
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }} | {{ .Site.Title }}{{ end }}</title>
-  <link rel="stylesheet" href="{{ "css/main.css" | relURL }}">
-</head>
-<body>
-  <header class="site-header">…</header>
-  <main id="main-content" class="site-main">
-    {{ block "main" . }}{{ end }}
-  </main>
-  <footer class="site-footer">…</footer>
-</body>
-</html>
+```
+文章页   content/posts/xxx.md ──→ layouts/_default/single.html
+首页                       ──→ layouts/index.html
+分类列表页                 ──→ layouts/_default/list.html
 ```
 
-### 首页：数据驱动的分类入口
+三种页面都嵌在同一个 baseof 骨架里，导航、页脚共用。于是：**想改长相，改模板；想加内容，写 Markdown——两边互不打扰**。这也是后面所有设计决策的出发点。
 
-首页不放文章流，而是遍历 `data/categories.toml` 渲染四个分类入口卡片。数据变了，首页自动变，模板一行不用改：
+### baseof：全站只写一次的部分
+
+baseof 是全站骨架：`<html>`、头部 meta、导航、页脚都在这里，任何页面都继承它。核心只有一行 `{{ block "main" . }}`——这是一个**插槽**，具体页面（首页、文章页）只负责填这一块：
+
+```go-html-template
+<body>
+  <header class="site-header">…导航…</header>
+  <main id="main-content" class="site-main">
+    {{ block "main" . }}{{ end }}   <!-- 页面内容插在这里 -->
+  </main>
+  <footer class="site-footer">…页脚…</footer>
+</body>
+```
+
+效果：全站一致的部分只写一次，改一次导航，所有页面跟着变。
+
+### 首页：结构由数据驱动
+
+首页不放死文章列表，而是读 `data/categories.toml` 里的分类数据，循环渲染入口卡片：
 
 ```go-html-template
 {{ range $index, $category := .Site.Data.categories.categories }}
-  {{ $term := $.Site.GetPage (printf "/categories/%s" $category.slug) }}
-  <a class="category-path" href="{{ $term.RelPermalink }}">
+  <a class="category-path" href="{{ $.Site.GetPage (printf "/categories/%s" $category.slug) }}">
     <span>{{ printf "%02d" (add $index 1) }} / {{ $category.code }}</span>
     <h3>{{ $category.title }}</h3>
-    <p>{{ $category.description }}</p>
-    <span>{{ if gt (len $term.Pages) 0 }}{{ len $term.Pages }} 篇{{ else }}{{ $category.empty }}{{ end }}</span>
   </a>
 {{ end }}
 ```
 
-### single：文章页
+效果：首页结构由数据决定。以后加一个新分类，改一行数据即可，模板一行不用动——这就是前面说的"内容与结构解耦"落到实处的样子。
 
-文章页组装了分类标签、日期、阅读时长、条件粘性目录和正文：
+### 文章页：元信息、目录、正文的组装
+
+文章页按固定顺序组装：头部（分类、日期、阅读时长）→ 侧栏目录 → 正文。最值得注意的一行是目录的**条件显示**：
 
 ```go-html-template
-<article class="article-page">
-  <header class="article-head">
-    <p class="section-label">{{ $category.title }}</p>
-    <h1>{{ .Title }}</h1>
-    <div class="article-meta">
-      <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2006-01-02" }}</time>
-      <span>约 {{ .ReadingTime }} 分钟</span>
-    </div>
-  </header>
-  <div class="article-shell">
-    {{ if gt (len .TableOfContents) 40 }}
-      <aside class="article-toc">{{ .TableOfContents }}</aside>
-    {{ end }}
-    <div class="article-content">{{ .Content }}</div>
-  </div>
-</article>
+{{ if gt (len .TableOfContents) 40 }}
+  <aside class="article-toc">{{ .TableOfContents }}</aside>
+{{ end }}
+<div class="article-content">{{ .Content }}</div>
 ```
 
-注意 `{{ .TableOfContents }}`：Hugo 原生生成目录 HTML，模板里只需判断"内容够长才显示侧栏目录"，长文自动有目录，短文不浪费版面。
+`.TableOfContents` 是 Hugo 原生生成的目录 HTML，模板只判断"目录够长才显示侧栏"。于是**长文自动有目录，短文不浪费版面**——功能是 Hugo 给的，设计取舍是自己的。
 
 ### 用 AI 迭代视觉设计
 
-这是最有意思的部分。我没有直接套主题，而是把设计需求拆给豆包工作版（AI 代理）：
+模板决定了"怎么实现"，这一节讲"为什么长这样"。我没有直接套主题，而是把设计需求拆给豆包工作版（AI 代理）：
 
-1. 先让它熟悉现有站点，读结构、读样式，理解"现在长什么样"
+1. 先让它熟悉现有站点：读结构、读样式，理解"现在长什么样"
 2. 给出几个明确的设计方向（高保真 HTML 示例），每个都包含首页、文章列表、文章阅读页三个视图，直接在浏览器里对比
 3. 一轮轮提意见：去掉"当前关注"区块、去掉区块标题、导航只留 GitHub……每次修改后 AI 自动截图自检布局和溢出
 4. 定稿后，把定稿方向翻译成 Hugo 模板与 CSS tokens
